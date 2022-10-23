@@ -7,7 +7,7 @@ env:
     SHELL: /bin/bash
     TC_DYNAMO_TABLE: "Candidates"
     AWS_DEFAULT_REGION: us-east-1
-    USER: "aws_code_build"
+    USER: "dmoisant"
     PIPENV_NOSPIN: 1
 
 phases:

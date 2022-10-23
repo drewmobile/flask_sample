@@ -32,7 +32,6 @@ phases:
       - export GITHUB_TAG="$(git describe --tags || echo 'no-version-info')"
       - echo "GITHUB_BRANCH=${GITHUB_BRANCH} GITHUB_COMMIT=${GITHUB_COMMIT} GITHUB_TAG=${GITHUB_TAG} DOCKER_IMG_TAG=${DOCKER_IMG_TAG}"
       - echo "Creating a clean environment"
-      - make ci
   build:
     commands:
       - echo "Check code formatting"

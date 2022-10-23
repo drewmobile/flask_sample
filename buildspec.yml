@@ -20,18 +20,11 @@ phases:
       - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${REGISTRY}
   pre_build:
     commands:
-      - echo "Export of the image tag for build and push purposes"
-      # Reading git branch (the utility in the deploy script is unable to read it automatically on CodeBuild)
-      # see https://stackoverflow.com/questions/47657423/get-github-git-branch-for-aws-codebuild
-      - export GITHUB_BRANCH="$(git symbolic-ref HEAD --short 2>/dev/null)"
-      - |
-        if [ "${GITHUB_BRANCH}" = "" ] ; then
-          GITHUB_BRANCH="$(git branch -a --contains HEAD | sed -n 2p | awk '{ printf $1 }')";
-          export GITHUB_BRANCH=${GITHUB_BRANCH#remotes/origin/};
-        fi
-      - export GITHUB_COMMIT=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - export GITHUB_TAG="$(git describe --tags || echo 'no-version-info')"
-      - echo "GITHUB_BRANCH=${GITHUB_BRANCH} GITHUB_COMMIT=${GITHUB_COMMIT} GITHUB_TAG=${GITHUB_TAG} DOCKER_IMG_TAG=${DOCKER_IMG_TAG}"
+      - echo Loggin in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login ---region $AWS_DEFAULT_REGION --no-include-email)
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=build-$(echo $CODEBUILD_BUILD_ID |awk -F":" '{print $2}')
   build:
     commands:
       - echo Build started on $(date)
@@ -53,14 +46,7 @@ phases:
 
   post_build:
     commands:
-      # Only push image to registry for merge to develop and master
-      - |
-        if [ "${GITHUB_BRANCH}" = "master" ] || [ "${GITHUB_BRANCH}" = "develop" ]; then
-          echo "Pushing image ${DOCKER_IMG_TAG} to the registry"
-          docker push ${DOCKER_IMG_TAG}
-        fi
-      - |
-        if [ "${GITHUB_BRANCH}" = "develop" ]; then
-          echo "Pushing image ${DOCKER_IMG_TAG_LATEST} to the registry"
-          docker push ${DOCKER_IMG_TAG_LATEST}
-        fi
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REGISTRY:latest
+      - docker push $REGISTRY:$IMAGE_TAG

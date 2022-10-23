@@ -5,6 +5,7 @@ env:
     IMAGE_BASE_NAME: "service-name"
     REGISTRY: "504480069810.dkr.ecr.us-east-1.amazonaws.com/flask-app-ecr-repo"
     SHELL: /bin/bash
+    TC_DYNAMO_TABLE: "Candidates"
     AWS_DEFAULT_REGION: us-east-1
     USER: "aws_code_build"
     PIPENV_NOSPIN: 1
